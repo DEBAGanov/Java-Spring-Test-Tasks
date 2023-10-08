@@ -1,0 +1,100 @@
+plugins {
+    id "org.openapi.generator" version "6.0.1"
+    id 'org.springframework.boot' version '2.7.2'
+    id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+    id 'java'
+    id 'jacoco'
+    id 'org.barfuin.gradle.jacocolog' version '1.0.1'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation ('org.springframework.boot:spring-boot-starter-web:2.7.1')
+    implementation ('org.springframework.boot:spring-boot-starter-data-jpa:2.7.1')
+    implementation ('org.springframework.boot:spring-boot-starter-security:2.7.1')
+    implementation ('io.jsonwebtoken:jjwt:0.9.1')
+    implementation ('org.jsoup:jsoup:1.14.3')
+    compileOnly ('org.projectlombok:lombok:1.18.24')
+    annotationProcessor ('org.projectlombok:lombok:1.18.24')
+    implementation ('org.modelmapper:modelmapper:3.1.0')
+    runtimeOnly ('com.h2database:h2:2.1.212')
+
+    testImplementation ('org.springframework.boot:spring-boot-starter-test:2.7.1')
+    testImplementation ('org.junit.jupiter:junit-jupiter-api:5.8.2')
+    testRuntimeOnly ('org.junit.jupiter:junit-jupiter-engine:5.8.2')
+    testImplementation ('org.mock-server:mockserver-netty:5.13.2')
+    testCompileOnly ('org.projectlombok:lombok:1.18.24')
+    testAnnotationProcessor ('org.projectlombok:lombok:1.18.24')
+
+    implementation ('org.openapitools:openapi-generator-gradle-plugin:6.0.1') {
+        exclude module: "slf4j-simple"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+apply plugin: 'org.openapi.generator'
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "src/main/resources/MyBookmarks.yaml".toString()
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "org.example.mybookmarks.generated.api"
+    invokerPackage = "org.example.mybookmarks.generated.invoker"
+    modelPackage = "org.example.mybookmarks.generated.model"
+}
+
+openApiValidate {
+    inputSpec = "src/main/resources/MyBookmarks.yaml"
+    recommend = true
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude : [
+                    "org/example/mybookmarks/model/*",
+                    "org/example/mybookmarks/datamodel/*",
+                    "org/example/mybookmarks/BookmarksApplication.class"
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude : [
+                    "org/example/mybookmarks/model/*",
+                    "org/example/mybookmarks/datamodel/*",
+                    "org/example/mybookmarks/BookmarksApplication.class"
+            ])
+        }))
+    }
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.7
+            }
+        }
+    }
+}
