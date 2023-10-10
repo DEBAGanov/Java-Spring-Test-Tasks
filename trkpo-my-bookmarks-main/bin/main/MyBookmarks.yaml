@@ -1,0 +1,258 @@
+openapi: "3.0.2"
+info:
+  title: API Title
+  version: "1.0"
+servers:
+  - url: https://localhost:8080/v1/
+
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      description: "error details"
+      type: object
+      properties:
+        error:
+          type: string
+
+    Bookmark:
+      description: "Bookmark information"
+      type: object
+      required:
+        - id
+        - url
+        - createdDate
+        - title
+      properties:
+        id:
+          description: "id of the Bookmark"
+          type: integer
+        url:
+          description: "Source url of the bookmark"
+          type: string
+        createdDate:
+          description: "date-time of adding this bookmark. the date-time notation as defined by RFC 3339, section 5.6, for example, 2017-07-21T17:32:28Z"
+          type: string
+          format: date-time
+        title:
+          description: "Title of the document fetched by url property"
+          type: string
+        tag:
+          description: "tag of the bookmark"
+          type: string
+
+  requestBodies:
+    UserCreds:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                description: "user email used as a login name"
+                type: string
+                format: email
+              password:
+                type: string
+                format: password
+
+  responses:
+    400BadInput:
+      description: "bad input parameters"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    UnauthorizedError:
+      description: Access token is missing or invalid
+
+    InvalidCredentials:
+      description: Invalid login or password
+
+paths:
+  /ping:
+    get:
+      responses:
+        '200':
+          description: OK
+
+  /register:
+    post:
+      description: "Creates new user"
+      requestBody:
+        $ref: '#/components/requestBodies/UserCreds'
+
+      responses:
+        200:
+          description: "user created"
+        409:
+          description: "Already existed user"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          $ref: '#/components/responses/InvalidCredentials'
+        400:
+          $ref: '#/components/responses/400BadInput'
+
+  /account:
+    delete:
+      description: "Deletes current logged in user and all user's content"
+      security:
+        - bearerAuth: [ ]
+
+      responses:
+        200:
+          description: "user deleted"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth:
+    post:
+      description: "Authenticates user by login and password"
+      requestBody:
+        $ref: '#/components/requestBodies/UserCreds'
+
+      responses:
+        200:
+          description: "authToken of the authenticated user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authToken:
+                    description: "JWT used as an Authorization header in bookmarks requests. Usage Authorization: Bearer <authToken>"
+                    type: string
+
+        401:
+          $ref: '#/components/responses/InvalidCredentials'
+
+        400:
+          $ref: '#/components/responses/400BadInput'
+
+  /bookmark:
+    post:
+      description: "Creates new bookmark and a tag if tag was not existed"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  description: "url to save as a bookmark"
+                  type: string
+                tag:
+                  description: "tag of the bookmark"
+                  type: string
+
+      responses:
+        200:
+          description: "Created bookmark info"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        400:
+          description: "Provided url is not valid. HTTP get request to the url should return 200 ok and contain page title"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      description: "Returns all bookmarks, order and tag can be optionally specified"
+      security:
+        - bearerAuth: []
+      parameters:
+        -
+          name: tag
+          description: |
+            if tag is an empty string bookmarks without tags should be returned,
+            if tag is null - return all bookmarks, 
+            otherwise bookmarks with specified tag should be returned
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: sorting_order
+          in: query
+          description: "sorting order (ascending). If omitted - order of the results is undefined"
+          schema:
+            type: string
+            enum:
+              - BY_DATE
+              - BY_TITLE
+              - BY_URL
+
+      responses:
+        200:
+          description: "list of requested bookmark infos"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bookmark'
+
+        400:
+          $ref: '#/components/responses/400BadInput'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /bookmark/{bookmark_id}:
+    get:
+      description: "Retrieves bookmark information"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookmark_id
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: "requested bookmark info"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        404:
+          description: "not found"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
+    delete:
+      description: "Deletes bookmark"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookmark_id
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: "Ok"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
