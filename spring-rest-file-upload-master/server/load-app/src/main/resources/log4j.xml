@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="true">
+
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                   value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </layout>
+    </appender>
+
+    <!--Писатель в файл всего от уровня DEBUG до уровня FATAL-->
+    <appender name="debug" class="org.apache.log4j.RollingFileAppender">
+        <param name="maxFileSize" value="10MB"/>
+        <param name="maxBackupIndex" value="1000000"/>
+        <param name="file" value="${catalina.base}/logs/upload.debug.log"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="DEBUG"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+
+    <!--Писатель в файл всего от уровня INFO до уровня FATAL-->
+    <appender name="info" class="org.apache.log4j.RollingFileAppender">
+        <param name="maxFileSize" value="10MB"/>
+        <param name="maxBackupIndex" value="1000000"/>
+        <param name="file" value="${catalina.base}/logs/upload.info.log"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="INFO"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+
+    <!--Писатель в файл всего от уровня ERROR до уровня FATAL-->
+    <appender name="error" class="org.apache.log4j.RollingFileAppender">
+        <param name="maxFileSize" value="10MB"/>
+        <param name="maxBackupIndex" value="1000000"/>
+        <param name="file" value="${catalina.base}/logs/upload.error.log"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ERROR"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+
+    <!--Писатель в файл всего уровня FATAL-->
+    <appender name="fatal" class="org.apache.log4j.RollingFileAppender">
+
+        <param name="maxFileSize" value="10MB"/>
+        <param name="maxBackupIndex" value="1000000"/>
+        <param name="file" value="${catalina.base}/logs/upload.fatal.log"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="FATAL"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+
+
+    <root>
+        <!--Указывается минимальный уровень логирования, например INFO, будет логироваться всё от INFO до FATAL-->
+        <!--Если указать DEBUG, то будет логироваться всё от INFO до FATAL-->
+        <!--ВАЖНО!!! Если указываете уровень, то закоментируйте все нижестоящие писатели, для того, чтобы не дублировалась лишняя информация-->
+        <!--Если указали INFO, то отключить DEBUG-->
+        <!--Если указали ERROR, то отключить DEBUG, INFO-->
+        <level value="info"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="debug"/>
+        <appender-ref ref="info"/>
+        <appender-ref ref="error"/>
+        <appender-ref ref="fatal"/>
+    </root>
+
+</log4j:configuration>

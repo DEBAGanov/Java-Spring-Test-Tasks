@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>File Upload</title>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-4">
+      <h3>File Upload REST API Demo</h3>
+      <form th:action="@{/upload}" th:object="${fileForm}" method="post"
+            enctype="multipart/form-data"
+            class="form">
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input type="text" name="name" id="name" class="form-control" th:field="*{name}"/>
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" name="email" id="email" class="form-control" th:field="*{email}"/>
+        </div>
+        <div class="form-group">
+          <label for="file">Select File:</label>
+          <input type="file" name="file" id="file" class="form-control-file"/>
+        </div>
+        <div class="mt-4">
+          <input type="submit" value="Upload" class="btn btn-primary"/>
+        </div>
+      </form>
+      <div th:if="${success}" class="alert alert-success mt-2">
+        <div th:text="${success}"/>
+      </div>
+      <div th:if="${error}" class="alert alert-danger mt-2">
+        <div th:text="${error}"/>
+      </div>
+    </div>
+
+    <div class="col-lg-4 mt-5">
+      <!-- Display file details -->
+      <table th:if="${success}" class="table table-bordered">
+        <thead class="thead-light">
+        <tr>
+          <th>File name</th>
+          <td th:text="*{fileName}"></td>
+        </tr>
+        <tr>
+          <th>File size</th>
+          <td th:text="*{fileSize} + ' bytes'"></td>
+        </tr>
+        <tr>
+          <th>File content type</th>
+          <td th:text="*{fileType}"></td>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

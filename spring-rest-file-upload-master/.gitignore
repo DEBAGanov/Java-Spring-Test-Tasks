@@ -1,0 +1,12 @@
+*.sass-cache
+*.idea
+*.iml
+target/
+*.log
+.orig
+
+/tomcat
+currentWork/
+upload-dir/
+MANIFEST.MF
+

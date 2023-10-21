@@ -1,0 +1,45 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:if="${message}">
+  <h2 th:text="${message}"/>
+</div>
+
+<div>
+  <form method="POST" enctype="multipart/form-data" action="/">
+    <table>
+      <tr>
+        <td>File to upload 1:</td>
+        <td><input type="file" name="files"/></td>
+      </tr>
+      <tr>
+        <td>File to upload 2:</td>
+        <td><input type="file" name="files"/></td>
+      </tr>
+      <tr>
+        <td>JSON file to upload:</td>
+        <td><input type="file" name="json"/></td>
+      </tr>
+      <tr>
+        <td>File to upload 1:</td>
+        <td><input type="text" name="fileUrl"
+                   value="https://www.google.ru/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"/></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="submit" value="Upload"/></td>
+      </tr>
+    </table>
+  </form>
+</div>
+
+<div>
+  <ul>
+    <li th:each="file : ${files}">
+      <a th:href="${file}" th:text="${file}"/>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
